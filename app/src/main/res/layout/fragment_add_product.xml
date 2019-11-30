@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:layout_height="match_parent"
+    tools:context=".AddProductFragment">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:theme="@style/TextInputLayoutAppearance"
+        app:errorEnabled="true">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Product Name"
+            android:id="@+id/product_name"
+            android:inputType="text" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/category"
+        android:entries="@array/category"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        style="@style/spinner_style"
+        />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:theme="@style/TextInputLayoutAppearance"
+        app:errorEnabled="true">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:id="@+id/product_description"
+            android:inputType="text" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+    <Button
+        android:id="@+id/btnChoose"
+        android:text="Choose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#2aabe4"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="#fff"
+        android:layout_marginBottom="4dp"/>
+
+    <Button
+        android:id="@+id/btnUploadImage"
+        android:text="Upload Data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#2aabe4"
+        android:textColor="#fff"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="4dp"
+        />
+    <Button
+        android:id="@+id/btnUpload"
+        android:text="Submit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#2aabe4"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="#fff"
+        />
+
+</LinearLayout>

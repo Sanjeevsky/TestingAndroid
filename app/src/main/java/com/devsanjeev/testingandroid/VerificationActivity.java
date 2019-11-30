@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskExecutors;
 import com.google.android.material.snackbar.Snackbar;
@@ -19,7 +21,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class VerificationActivity extends AppCompatActivity {
@@ -30,20 +40,20 @@ public class VerificationActivity extends AppCompatActivity {
 
     //firebase auth object
     private FirebaseAuth mAuth;
-
-
+    private FirebaseFirestore db;
+    private String mobile="";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verification);
         mAuth = FirebaseAuth.getInstance();
         editTextCode = findViewById(R.id.editTextCode);
-
+        db=FirebaseFirestore.getInstance();
 
         //getting mobile number from the previous activity
         //and sending the verification code to the number
         Intent intent = getIntent();
-        String mobile = intent.getStringExtra("mobile");
+        mobile = intent.getStringExtra("mobile");
         sendVerificationCode(mobile);
 
 
@@ -127,9 +137,39 @@ public class VerificationActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             //verification successful we will start the profile activity
-                            Intent intent = new Intent(VerificationActivity.this, MainActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
+                            db.collection("users")
+                                    .get()
+                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                            if (task.isSuccessful()) {
+                                                int count=0;
+                                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                                    if(Objects.equals(document.getString("mobile"), mobile)){
+                                                        break;
+                                                    }
+                                                    count++;
+                                                   // newUser(count,task);
+                                                }
+                                                if(count>task.getResult().size()){
+                                                    newUser(count,task);
+                                                }
+                                                else {
+                                                    Intent intent = new Intent(VerificationActivity.this, MainActivity.class);
+                                                    startActivity(intent);
+                                                    finish();
+                                                }
+
+
+                                            } else {
+
+                                                Toast.makeText(VerificationActivity.this, "Error Occured", Toast.LENGTH_SHORT).show();
+                                                finish();
+                                            }
+                                        }
+                                    });
+                            String userId=mAuth.getCurrentUser().getUid();
+
 
                         } else {
 
@@ -141,17 +181,39 @@ public class VerificationActivity extends AppCompatActivity {
                                 message = "Invalid code entered...";
                             }
 
-                            Snackbar snackbar = Snackbar.make(findViewById(R.id.parent), message, Snackbar.LENGTH_LONG);
-                            snackbar.setAction("Dismiss", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-
-                                }
-                            });
-                            snackbar.show();
                         }
                     }
                 });
+    }
+
+    private void newUser(int count, Task<QuerySnapshot> task) {
+        if(count>=task.getResult().size())
+        {
+            Map<String, Object> user = new HashMap<>();
+            user.put("name", "");
+            user.put("mobile", mobile);
+
+
+            db.collection("users").document(mAuth.getCurrentUser().getUid())
+                    .set(user)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(VerificationActivity.this, "User Added", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(VerificationActivity.this, MainActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(VerificationActivity.this, "Failed To Create User", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    });
+        }
     }
 
 }
